@@ -35,6 +35,11 @@ selected WebDAV folder for EPUB files whose corresponding local filename is abse
 
 ## Install
 
+### Install from KOReader App Store
+
+Open **Tools → App Store → Plugins**, refresh the catalog, and search for
+`koreader-webdav-inbox`. Select the plugin and choose the `webdavsend.koplugin.zip` release asset.
+
 ### Install with Git
 
 From KOReader's installation directory:
