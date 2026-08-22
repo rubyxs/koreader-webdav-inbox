@@ -344,6 +344,11 @@ function WebDAVInbox:init()
     self.settings:readSetting("auto_sync", true)
     self.settings:readSetting("seen", {})
     self.settings:readSetting("ignored_remote_paths", {})
+    if self.settings:isTrue("low_traffic_auto_sync")
+            and not self.settings:isTrue("auto_sync") then
+        self.settings:saveSetting("auto_sync", true)
+        self.settings:flush()
+    end
     local activity_size = lfs.attributes(self.activity_file, "size")
     if activity_size and activity_size > MAX_ACTIVITY_LOG_SIZE then
         os.remove(self.activity_file .. ".old")
@@ -699,6 +704,9 @@ function WebDAVInbox:chooseLocalFolder(touchmenu_instance)
 end
 
 function WebDAVInbox:toggleAutoSync(touchmenu_instance)
+    if self.settings:isTrue("low_traffic_auto_sync") then
+        return
+    end
     self.settings:saveSetting("auto_sync", not self.settings:isTrue("auto_sync"))
     self.settings:flush()
     self:registerEvents()
@@ -709,9 +717,11 @@ function WebDAVInbox:toggleLowTraffic(touchmenu_instance)
     local enabled = not self.settings:isTrue("low_traffic_auto_sync")
     self.settings:saveSetting("low_traffic_auto_sync", enabled)
     if enabled then
+        self.settings:saveSetting("auto_sync", true)
         self.settings:delSetting("collection_marker")
     end
     self.settings:flush()
+    self:registerEvents()
     touchmenu_instance:updateItems()
     if enabled then
         UIManager:show(InfoMessage:new{
@@ -953,6 +963,9 @@ function WebDAVInbox:addToMainMenu(menu_items)
                 text = _("Sync automatically when connected"),
                 checked_func = function()
                     return self.settings:isTrue("auto_sync")
+                end,
+                enabled_func = function()
+                    return not self.settings:isTrue("low_traffic_auto_sync")
                 end,
                 callback = function(touchmenu_instance)
                     self:toggleAutoSync(touchmenu_instance)
