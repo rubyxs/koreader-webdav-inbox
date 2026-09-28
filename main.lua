@@ -1,6 +1,7 @@
 local BD = require("ui/bidi")
 local ConfirmBox = require("ui/widget/confirmbox")
 local DataStorage = require("datastorage")
+local Dispatcher = require("dispatcher")
 local InfoMessage = require("ui/widget/infomessage")
 local LuaSettings = require("luasettings")
 local Menu = require("ui/widget/menu")
@@ -398,6 +399,7 @@ function WebDAVInbox:init()
         writeStatus(self.status_file, "interrupted", 0, 0, "", false)
         appendActivity(self.activity_file, "FAIL", tr("Previous sync was interrupted by KOReader exiting"))
     end
+    self:onDispatcherRegisterActions()
     self.ui.menu:registerToMainMenu(self)
     if self.ui.addFileDialogButtons then
         self.ui:addFileDialogButtons("webdavsend_delete", function(file, is_file)
@@ -417,6 +419,19 @@ function WebDAVInbox:init()
         end)
     end
     self:registerEvents()
+end
+
+function WebDAVInbox:onDispatcherRegisterActions()
+    Dispatcher:registerAction("webdav_inbox_sync_now", {
+        category = "none",
+        event = "WebDAVInboxSyncNow",
+        title = tr("WebDAV inbox") .. ": " .. tr("Sync now"),
+        general = true,
+    })
+end
+
+function WebDAVInbox:onWebDAVInboxSyncNow()
+    self:startSync(true)
 end
 
 function WebDAVInbox:migrateLegacySettings()
@@ -1351,7 +1366,7 @@ function WebDAVInbox:addToMainMenu(menu_items)
                     return self:isConfigured() and not self:isBusy()
                 end,
                 callback = function()
-                    self:startSync(true)
+                    self:onWebDAVInboxSyncNow()
                 end,
             },
             {

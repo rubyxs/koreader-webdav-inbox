@@ -51,6 +51,8 @@ downloads missing EPUBs and never overwrites an existing local book.
 
 **Sync now** processes every enabled, fully configured mapping sequentially in one background job.
 You can also open an individual mapping and use **Sync this mapping now**.
+The **WebDAV inbox: Sync now** dispatcher action runs the same full sync and can be assigned to
+a gesture or another KOReader action shortcut.
 
 Whenever KOReader receives a network-connected event, automatic sync checks all enabled mappings.
 WebDAV subfolders are recreated under each mapping's selected local folder.
